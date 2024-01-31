@@ -42,8 +42,8 @@ public class IntQueueTest {
     @Before
     public void setUp() {
         // comment/uncomment these lines to test each class
-        mQueue = new LinkedIntQueue();
-        // mQueue = new ArrayIntQueue();
+        // mQueue = new LinkedIntQueue();
+        mQueue = new ArrayIntQueue();
 
         testList = new ArrayList<>(List.of(1, 2, 3));
     }
@@ -119,6 +119,102 @@ public class IntQueueTest {
                 assertEquals(mQueue.dequeue(), result);
             }
         }
+    }
+
+    @Test
+    public void testDequeueOnEmptyQueue() {
+        // The queue is initially empty, so this should return null.
+        assertNull(mQueue.dequeue());
+    }
+
+    @Test
+    public void testEnsureCapacityWithWrapAround() {
+        final int initialSize = 10; // Use the known initial size.
+
+        // Step 1: Fill the queue to its initial capacity.
+        for (int i = 0; i < initialSize; i++) {
+            mQueue.enqueue(i);
+        }
+
+        // Step 2: Dequeue a few elements to move the head forward.
+        int numberToDequeue = 3;
+        for (int i = 0; i < numberToDequeue; i++) {
+            mQueue.dequeue();
+        }
+
+        // Step 3: Enqueue elements to fill the queue and force a wrap around.
+        for (int i = 0; i < numberToDequeue; i++) {
+            mQueue.enqueue(initialSize + i);
+        }
+
+        // Step 4: Add one more element to trigger a resize.
+        mQueue.enqueue(-1);
+
+        // Now the queue should have been resized, and we need to check the order.
+        for (int i = numberToDequeue; i < initialSize; i++) {
+            assertEquals(Integer.valueOf(i), mQueue.dequeue());
+        }
+        for (int i = 0; i < numberToDequeue; i++) {
+            assertEquals(Integer.valueOf(initialSize + i), mQueue.dequeue());
+        }
+        assertEquals(Integer.valueOf(-1), mQueue.dequeue());
+        assertTrue(mQueue.isEmpty());
+    }
+
+    @Test
+    public void testClear() {
+        mQueue.enqueue(1);
+        mQueue.enqueue(2);
+        mQueue.clear();
+        assertTrue(mQueue.isEmpty());
+        assertEquals(0, mQueue.size());
+    }
+
+    @Test
+    public void testEnqueueAfterClear() {
+        mQueue.enqueue(1);
+        mQueue.clear();
+        mQueue.enqueue(2);
+        assertEquals(1, mQueue.size());
+        assertEquals(Integer.valueOf(2), mQueue.peek());
+    }
+
+    @Test
+    public void testDequeueSingleElement() {
+        mQueue.enqueue(1);
+        assertEquals(Integer.valueOf(1), mQueue.dequeue());
+        assertTrue(mQueue.isEmpty());
+    }
+
+    @Test
+    public void testPeekAfterDequeue() {
+        mQueue.enqueue(1);
+        mQueue.enqueue(2);
+        mQueue.dequeue();
+        assertEquals(Integer.valueOf(2), mQueue.peek());
+    }
+
+    @Test
+    public void testEnqueueWithMultipleResizing() {
+        for (int i = 0; i < 100; i++) {
+            mQueue.enqueue(i);
+        }
+        for (int i = 0; i < 100; i++) {
+            assertEquals(Integer.valueOf(i), mQueue.dequeue());
+        }
+        assertTrue(mQueue.isEmpty());
+    }
+
+    @Test
+    public void testDequeueToEmptyThenEnqueue() {
+        mQueue.enqueue(1);
+        mQueue.enqueue(2);
+        mQueue.dequeue();
+        mQueue.dequeue();
+        assertTrue(mQueue.isEmpty());
+        mQueue.enqueue(3);
+        assertFalse(mQueue.isEmpty());
+        assertEquals(Integer.valueOf(3), mQueue.peek());
     }
 
 }

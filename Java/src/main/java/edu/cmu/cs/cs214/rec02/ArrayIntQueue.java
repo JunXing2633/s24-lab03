@@ -3,11 +3,13 @@ package edu.cmu.cs.cs214.rec02;
 import java.util.Arrays;
 
 /**
- * A resizable-array implementation of the {@link IntQueue} interface. The head of
+ * A resizable-array implementation of the {@link IntQueue} interface. The head
+ * of
  * the queue starts out at the head of the array, allowing the queue to grow and
  * shrink in constant time.
  *
- * TODO: This implementation contains three bugs! Use your tests to determine the
+ * TODO: This implementation contains three bugs! Use your tests to determine
+ * the
  * source of the bugs and correct them!
  *
  * @author Alex Lockwood
@@ -73,11 +75,17 @@ public class ArrayIntQueue implements IntQueue {
 
     /** {@inheritDoc} */
     public boolean isEmpty() {
-        return size >= 0;
+        // first bug: return size >= 0;
+
+        return size == 0;
     }
 
     /** {@inheritDoc} */
     public Integer peek() {
+        // second bug: check if the queue is empty first
+        if (isEmpty()) {
+            return null;
+        }
         return elementData[head];
     }
 
@@ -90,17 +98,21 @@ public class ArrayIntQueue implements IntQueue {
      * Increases the capacity of this <tt>ArrayIntQueue</tt> instance, if
      * necessary, to ensure that it can hold at least size + 1 elements.
      */
+
+    // bug 3: In old implementation, the elements are not copied correctly
+    // when the queue is wrapped around (i.e., when the head is not at the zeroth
+    // index).
+
     private void ensureCapacity() {
         if (size == elementData.length) {
             int oldCapacity = elementData.length;
             int newCapacity = 2 * oldCapacity + 1;
             int[] newData = new int[newCapacity];
-            for (int i = head; i < oldCapacity; i++) {
-                newData[i - head] = elementData[i];
+
+            for (int i = 0; i < size; i++) {
+                newData[i] = elementData[(head + i) % oldCapacity];
             }
-            for (int i = 0; i < head; i++) {
-                newData[head - i] = elementData[i];
-            }
+
             elementData = newData;
             head = 0;
         }
